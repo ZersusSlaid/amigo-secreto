@@ -1,43 +1,290 @@
+
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Amigo Secreto Familiar 🎁</title>
+
 <style>
-:root{font-family:system-ui,Segoe UI,sans-serif;color:#21352d;background:#f5f7f4}*{box-sizing:border-box}body{margin:0}header{background:linear-gradient(130deg,#13543d,#0b382d);color:white;text-align:center;padding:45px 16px}header h1{font-size:clamp(2rem,6vw,3.4rem);margin:0 0 8px}main{max-width:760px;margin:25px auto;padding:0 16px 45px}.panel{background:white;padding:24px;border-radius:18px;box-shadow:0 8px 28px #173e2812;margin-bottom:18px}h2{margin-top:0}label{display:block;font-weight:650;margin:14px 0 5px}input,textarea{font:inherit;width:100%;padding:12px;border:1px solid #b9c9bd;border-radius:9px}textarea{min-height:90px;resize:vertical}button{background:#166045;color:white;border:0;padding:12px 18px;border-radius:9px;font:inherit;font-weight:650;cursor:pointer}button:hover{background:#0b4933}button.secondary{background:#f4e6e6;color:#9c2323}.person{border-top:1px solid #e0e8e1;padding:14px 0;display:flex;align-items:start;justify-content:space-between;gap:12px}.person p{white-space:pre-wrap;margin:6px 0}.muted{color:#52675a}.note{border-left:4px solid #bb862b;padding:10px 14px;background:#fff8e8;border-radius:7px}footer{text-align:center;color:#52675a;font-size:.9rem;padding:10px}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #d7a23e;outline-offset:2px}
+:root {
+  font-family: system-ui, Segoe UI, sans-serif;
+  color: #21352d;
+  background: #f5f7f4;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; }
+
+header {
+  background: linear-gradient(130deg, #13543d, #0b382d);
+  color: white;
+  text-align: center;
+  padding: 45px 16px;
+}
+
+header h1 {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  margin: 0 0 8px;
+}
+
+main {
+  max-width: 760px;
+  margin: 25px auto;
+  padding: 0 16px 45px;
+}
+
+.panel {
+  background: white;
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 8px 28px #173e2812;
+  margin-bottom: 18px;
+}
+
+h2 { margin-top: 0; }
+
+label {
+  display: block;
+  font-weight: 650;
+  margin: 14px 0 5px;
+}
+
+input, textarea {
+  font: inherit;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #b9c9bd;
+  border-radius: 9px;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+button {
+  background: #166045;
+  color: white;
+  border: 0;
+  padding: 12px 18px;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+button:hover { background: #0b4933; }
+
+button:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.muted { color: #52675a; }
+
+.note {
+  border-left: 4px solid #bb862b;
+  padding: 10px 14px;
+  background: #fff8e8;
+  border-radius: 7px;
+}
+
+footer {
+  text-align: center;
+  color: #52675a;
+  font-size: .9rem;
+  padding: 10px;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #d7a23e;
+  outline-offset: 2px;
+}
+
+#estado {
+  min-height: 1.5em;
+}
+
+#estado[role="alert"] {
+  color: #9c2323;
+}
+
+#estado.exito {
+  color: #14613c;
+}
 </style>
 </head>
+
 <body>
-<header><h1>🎄 Amigo Secreto Familiar 🎁</h1><p>Una Navidad llena de sorpresas</p></header>
+
+<header>
+  <h1>🎄 Amigo Secreto Familiar 🎁</h1>
+  <p>Una Navidad llena de sorpresas</p>
+</header>
+
 <main>
-<section class="panel"><h2>Agregar participante</h2>
-<form id="form"><label for="nombre">Nombre</label><input id="nombre" maxlength="80" required placeholder="Ej. María">
-<label for="deseos">Lista de deseos</label><textarea id="deseos" maxlength="1500" placeholder="Ej. Libros, chocolates, juegos de mesa..."></textarea>
-<p><button type="submit">➕ Agregar familiar</button></p></form></section>
-<section class="panel"><h2>Participantes (<span id="contador">0</span>)</h2><div id="lista" aria-live="polite"></div></section>
-<section class="note"><strong>🔒 Versión de prueba:</strong> los datos se guardan únicamente en este navegador. Todavía no se sincronizan entre celulares ni existe un sorteo privado. No ingresés información sensible.</section>
-</main><footer>Hecho con cariño para la familia ❤️</footer>
+
+<section class="panel">
+
+  <h2>Registrarse en el Amigo Secreto</h2>
+
+  <p class="muted">
+    Completá tus datos y utilizá el código
+    de invitación compartido por la familia.
+  </p>
+
+  <form id="form">
+
+    <label for="nombre">Nombre</label>
+
+    <input
+      id="nombre"
+      maxlength="100"
+      minlength="2"
+      required
+      autocomplete="name"
+      placeholder="Ej. María"
+    >
+
+    <label for="deseos">Lista de deseos (opcional)</label>
+
+    <textarea
+      id="deseos"
+      maxlength="1500"
+      placeholder="Ej. Libros, chocolates, juegos de mesa..."
+    ></textarea>
+
+    <label for="codigo">Código de invitación</label>
+
+    <input
+      id="codigo"
+      type="password"
+      required
+      autocomplete="off"
+      placeholder="Código compartido por la familia"
+    >
+
+    <p>
+      <button id="enviar" type="submit">
+        🎁 Registrar mi participación
+      </button>
+    </p>
+
+    <p id="estado" aria-live="polite"></p>
+
+  </form>
+
+</section>
+
+<section class="note">
+  <strong>🔒 Privacidad:</strong>
+  Tu registro se enviará a la base de datos familiar.
+  Los datos de otros participantes no se muestran aquí.
+  El sorteo privado se habilitará más adelante.
+  No ingresés información sensible.
+</section>
+
+</main>
+
+<footer>
+  Hecho con cariño para la familia ❤️
+</footer>
+
 <script>
 "use strict";
-const KEY="amigo-secreto-participantes-v1";
-let personas=[];
-try{const saved=JSON.parse(localStorage.getItem(KEY)||"[]");if(Array.isArray(saved))personas=saved.filter(p=>p&&typeof p.nombre==="string"&&typeof p.deseos==="string");}catch{}
-const form=document.getElementById("form"),lista=document.getElementById("lista"),contador=document.getElementById("contador");
-function guardar(){localStorage.setItem(KEY,JSON.stringify(personas));}
-function render(){
-lista.replaceChildren();contador.textContent=personas.length;
-if(!personas.length){const p=document.createElement("p");p.className="muted";p.textContent="Todavía no hay participantes.";lista.append(p);return;}
-personas.forEach(p=>{
-const item=document.createElement("div");item.className="person";
-const info=document.createElement("div");const nombre=document.createElement("strong");nombre.textContent="🎅 "+p.nombre;
-const deseos=document.createElement("p");deseos.textContent=p.deseos?"🎁 Deseos: "+p.deseos:"Sin deseos registrados";
-info.append(nombre,deseos);
-const eliminar=document.createElement("button");eliminar.type="button";eliminar.className="secondary";eliminar.textContent="Eliminar";eliminar.setAttribute("aria-label","Eliminar a "+p.nombre);
-eliminar.addEventListener("click",()=>{personas=personas.filter(x=>x.id!==p.id);guardar();render();});
-item.append(info,eliminar);lista.append(item);
+
+// Dirección pública de nuestra Edge Function
+const ENDPOINT =
+  "https://ltvouirzqakdeccjmhle.supabase.co/functions/v1/registrar-participante";
+
+const form = document.getElementById("form");
+const enviar = document.getElementById("enviar");
+const estado = document.getElementById("estado");
+
+form.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  if (!form.reportValidity()) return;
+
+  const nombre =
+    document.getElementById("nombre").value.trim();
+
+  const deseos =
+    document.getElementById("deseos").value.trim();
+
+  const codigo =
+    document.getElementById("codigo").value;
+
+  // Validación inicial en el navegador
+  if (
+    nombre.length < 2 ||
+    nombre.length > 100 ||
+    deseos.length > 1500 ||
+    !codigo
+  ) {
+    estado.className = "";
+    estado.setAttribute("role", "alert");
+    estado.textContent = "Revisá los datos ingresados.";
+    return;
+  }
+
+  enviar.disabled = true;
+  estado.className = "";
+  estado.removeAttribute("role");
+  estado.textContent = "Enviando registro...";
+
+  try {
+
+    const respuesta = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        nombre,
+        deseos,
+        codigo
+      })
+    });
+
+    const resultado =
+      await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+      estado.setAttribute("role", "alert");
+      estado.textContent =
+        typeof resultado.error === "string"
+          ? resultado.error
+          : "No se pudo completar el registro.";
+      return;
+    }
+
+    estado.className = "exito";
+    estado.textContent =
+      "🎉 ¡Participación registrada correctamente!";
+
+    form.reset();
+
+  } catch (error) {
+
+    estado.setAttribute("role", "alert");
+    estado.textContent =
+      "No se pudo conectar con el servidor. Verificá tu conexión e intentá más tarde.";
+
+  } finally {
+
+    enviar.disabled = false;
+
+  }
+
 });
-}
-form.addEventListener("submit",e=>{e.preventDefault();const nombre=document.getElementById("nombre").value.trim();const deseos=document.getElementById("deseos").value.trim();if(!nombre)return;if(personas.some(p=>p.nombre.toLocaleLowerCase()===nombre.toLocaleLowerCase())){alert("Ese nombre ya está registrado.");return;}personas.push({id:crypto.randomUUID(),nombre,deseos});guardar();render();form.reset();document.getElementById("nombre").focus();});
-render();
 </script>
-</body></html>
+
+</body>
+</html>
