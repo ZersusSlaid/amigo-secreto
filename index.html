@@ -5,6 +5,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
+<meta name="referrer" content="no-referrer">
+
 <title>Amigo Secreto Familiar 🎁</title>
 
 <style>
@@ -106,16 +108,51 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-#estado {
+#estado,
+#estado-sorteo {
   min-height: 1.5em;
 }
 
-#estado[role="alert"] {
+#estado[role="alert"],
+#estado-sorteo[role="alert"] {
   color: #9c2323;
 }
 
 #estado.exito {
   color: #14613c;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.resultado {
+  text-align: center;
+  padding: 15px 0;
+}
+
+.destinatario {
+  color: #13543d;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  overflow-wrap: anywhere;
+}
+
+.deseos-box {
+  margin-top: 24px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #f5f7f4;
+  text-align: left;
+}
+
+.deseos-texto {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.privacidad {
+  font-size: .9rem;
+  color: #52675a;
 }
 </style>
 </head>
@@ -129,7 +166,8 @@ textarea:focus-visible {
 
 <main>
 
-<section class="panel">
+<!-- MODO REGISTRO -->
+<section class="panel" id="panel-registro">
 
   <h2>Registrarse en el Amigo Secreto</h2>
 
@@ -181,11 +219,51 @@ textarea:focus-visible {
 
 </section>
 
+<!-- MODO REVELACIÓN -->
+<section class="panel" id="panel-sorteo" hidden>
+
+  <div class="resultado">
+
+    <h2>🎅 ¡Tu Amigo Secreto! 🎁</h2>
+
+    <p class="muted">
+      La magia de la Navidad ha elegido a alguien especial...
+    </p>
+
+    <p id="estado-sorteo" aria-live="polite"></p>
+
+    <div id="resultado-sorteo" hidden>
+
+      <p>Este año te corresponde regalarle a:</p>
+
+      <h2 class="destinatario" id="destinatario"></h2>
+
+      <p>🎄 ¡Guardá el secreto hasta Navidad! 🎄</p>
+
+      <div class="deseos-box">
+
+        <h3>🎁 Su lista de deseos</h3>
+
+        <p class="deseos-texto" id="lista-deseos"></p>
+
+      </div>
+
+      <p class="privacidad">
+        Este resultado es privado.
+        No compartás tu enlace con otras personas.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
 <section class="note">
   <strong>🔒 Privacidad:</strong>
   Tu registro se enviará a la base de datos familiar.
-  Los datos de otros participantes no se muestran aquí.
-  El sorteo privado se habilitará más adelante.
+  Los resultados del sorteo solamente podrán consultarse
+  mediante un enlace privado.
   No ingresés información sensible.
 </section>
 
@@ -198,13 +276,142 @@ textarea:focus-visible {
 <script>
 "use strict";
 
-// Dirección pública de nuestra Edge Function
-const ENDPOINT =
+// Edge Function para registrar participantes
+const ENDPOINT_REGISTRO =
   "https://ltvouirzqakdeccjmhle.supabase.co/functions/v1/registrar-participante";
+
+// Edge Function para consultar el amigo secreto
+const ENDPOINT_SORTEO =
+  "https://ltvouirzqakdeccjmhle.supabase.co/functions/v1/consultar-amigo-secreto";
 
 const form = document.getElementById("form");
 const enviar = document.getElementById("enviar");
 const estado = document.getElementById("estado");
+
+const panelRegistro =
+  document.getElementById("panel-registro");
+
+const panelSorteo =
+  document.getElementById("panel-sorteo");
+
+const estadoSorteo =
+  document.getElementById("estado-sorteo");
+
+const resultadoSorteo =
+  document.getElementById("resultado-sorteo");
+
+// -------------------------------------------
+// DETECTAR ENLACE PRIVADO
+// -------------------------------------------
+
+// Aceptar enlaces con ?token= o #token=
+const parametrosURL =
+  new URLSearchParams(window.location.search);
+
+const parametrosHash =
+  new URLSearchParams(
+    window.location.hash.replace(/^#/, "")
+  );
+
+const tieneToken =
+  parametrosURL.has("token") ||
+  parametrosHash.has("token");
+
+const tokenPrivado =
+  parametrosHash.get("token") ??
+  parametrosURL.get("token");
+
+// Retirar el token visible de la dirección
+if (tieneToken) {
+  window.history.replaceState(
+    null,
+    "",
+    window.location.pathname
+  );
+
+  panelRegistro.hidden = true;
+  panelSorteo.hidden = false;
+
+  consultarAmigoSecreto(tokenPrivado);
+}
+
+// -------------------------------------------
+// CONSULTAR RESULTADO PRIVADO
+// -------------------------------------------
+
+async function consultarAmigoSecreto(token) {
+
+  estadoSorteo.textContent =
+    "🎄 Consultando tu sorpresa navideña...";
+
+  estadoSorteo.removeAttribute("role");
+  resultadoSorteo.hidden = true;
+
+  try {
+
+    const respuesta = await fetch(
+      ENDPOINT_SORTEO,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        cache: "no-store",
+        body: JSON.stringify({ token })
+      }
+    );
+
+    const resultado =
+      await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+
+      estadoSorteo.setAttribute("role", "alert");
+
+      estadoSorteo.textContent =
+        typeof resultado.error === "string"
+          ? resultado.error
+          : "No se pudo consultar tu amigo secreto.";
+
+      return;
+    }
+
+    if (
+      resultado.success !== true ||
+      typeof resultado.destinatario !== "string"
+    ) {
+      throw new Error("Respuesta inválida");
+    }
+
+    document.getElementById(
+      "destinatario"
+    ).textContent = resultado.destinatario;
+
+    document.getElementById(
+      "lista-deseos"
+    ).textContent =
+      typeof resultado.deseos === "string" &&
+      resultado.deseos.trim()
+        ? resultado.deseos
+        : "Esta persona no agregó una lista de deseos.";
+
+    estadoSorteo.textContent = "";
+
+    resultadoSorteo.hidden = false;
+
+  } catch (error) {
+
+    estadoSorteo.setAttribute("role", "alert");
+
+    estadoSorteo.textContent =
+      "No se pudo conectar con el servidor. Intentá nuevamente más tarde.";
+
+  }
+}
+
+// -------------------------------------------
+// REGISTRAR PARTICIPANTE
+// -------------------------------------------
 
 form.addEventListener("submit", async (event) => {
 
@@ -221,7 +428,6 @@ form.addEventListener("submit", async (event) => {
   const codigo =
     document.getElementById("codigo").value;
 
-  // Validación inicial en el navegador
   if (
     nombre.length < 2 ||
     nombre.length > 100 ||
@@ -241,17 +447,20 @@ form.addEventListener("submit", async (event) => {
 
   try {
 
-    const respuesta = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        nombre,
-        deseos,
-        codigo
-      })
-    });
+    const respuesta = await fetch(
+      ENDPOINT_REGISTRO,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nombre,
+          deseos,
+          codigo
+        })
+      }
+    );
 
     const resultado =
       await respuesta.json().catch(() => ({}));
